@@ -6,11 +6,10 @@ import (
     "strconv"
     "github.com/Tinkerforge/go-api-bindings/ipconnection"
     "github.com/Tinkerforge/go-api-bindings/remote_switch_v2_bricklet"
+    "RemoteController/config"
 )
 
-const REMOTE_SWITCH_UID = "EBA"
-const HOST = "192.168.178.40"
-const PORT = "4223"
+var configuration *config.Config
 
 // Rest interface for switching sockets
 func SwitchTo(context echo.Context) error {
@@ -56,22 +55,28 @@ func checkParameter(parameterKey string, context echo.Context) error {
 
 // Switches a socket of type A using the Tinkerforge Remote Switch Bricklet 2.0
 func switchSocketTo(houseCode uint8, receiverCode uint8, switchTo bool) error {
+    if configuration == nil {
+        var e error
+        configuration, e = config.Load()
+        if e != nil {
+            return e
+        }
+    }
+
     connection := ipconnection.New()
     defer connection.Close()
 
-    remoteSwitch, e := remote_switch_v2_bricklet.New(REMOTE_SWITCH_UID, &connection)
+    remoteSwitch, e := remote_switch_v2_bricklet.New(configuration.RemoteSwitchUID, &connection)
     if e != nil {
         return e
     }
 
-    connection.Connect(HOST + ":" + PORT)
+    connection.Connect(configuration.RemoteSwitchHost + ":" + configuration.RemoteSwitchPort)
     defer connection.Disconnect()
 
     if switchTo {
-        remoteSwitch.SwitchSocketA(houseCode, receiverCode, remote_switch_v2_bricklet.SwitchToOn)
+        return remoteSwitch.SwitchSocketA(houseCode, receiverCode, remote_switch_v2_bricklet.SwitchToOn)
     } else {
-        remoteSwitch.SwitchSocketA(houseCode, receiverCode, remote_switch_v2_bricklet.SwitchToOff)
+        return remoteSwitch.SwitchSocketA(houseCode, receiverCode, remote_switch_v2_bricklet.SwitchToOff)
     }
-
-    return nil
 }

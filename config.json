@@ -1,0 +1,6 @@
+{
+  "ServerPort": "8082",
+  "RemoteSwitchHost": "localhost",
+  "RemoteSwitchPort": "4223",
+  "RemoteSwitchUID": ""
+}
