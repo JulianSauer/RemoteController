@@ -6,6 +6,8 @@ import (
     "github.com/Tinkerforge/go-api-bindings/remote_switch_v2_bricklet"
     "gopkg.in/resty.v1"
     "time"
+    "net/url"
+    "os/exec"
 )
 
 const INPUT_DELY = 1000
@@ -46,19 +48,20 @@ func ParseCall(houseCode uint8, receiverCode uint8, switchTo remote_switch_v2_br
 
     for _, button := range remote_config.Buttons {
         if button.Id == receiverCode {
-            var response *resty.Response
-            var e error
+            var call string
             if switchTo == 0 {
-                response, e = resty.R().Get(button.Off)
+                call = button.Off
             } else {
-                response, e = resty.R().Get(button.On)
+                call = button.On
             }
-
-            if e != nil {
-                fmt.Println(e.Error())
+            fmt.Println("Executing: " + call)
+            var response string
+            if _, e := url.ParseRequestURI(call); e == nil {
+                response = executeRestCall(call)
+            } else {
+                response = executeShellCommand(call)
             }
-            fmt.Println("Executed: " + response.Request.URL)
-            fmt.Println("Response: " + response.String())
+            fmt.Println("Response: " + response)
             break
         }
     }
@@ -68,4 +71,21 @@ func ParseCall(houseCode uint8, receiverCode uint8, switchTo remote_switch_v2_br
 
 func currentTime() int64 {
     return time.Now().UnixNano() / int64(time.Millisecond)
+}
+
+func executeRestCall(url string) string {
+    response, e := resty.R().Get(url)
+
+    if e != nil {
+        fmt.Println(e.Error())
+    }
+    return response.String()
+}
+
+func executeShellCommand(cmd string) string {
+    response, e := exec.Command(cmd).Output()
+    if e != nil {
+        fmt.Println(e.Error())
+    }
+    return fmt.Sprintf("%s", response)
 }
