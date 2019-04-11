@@ -4,6 +4,9 @@ import (
     "github.com/labstack/echo"
     "RemoteController/socket"
     "RemoteController/config"
+    "github.com/Tinkerforge/go-api-bindings/ipconnection"
+    "github.com/Tinkerforge/go-api-bindings/remote_switch_v2_bricklet"
+    "RemoteController/remote"
 )
 
 func main() {
@@ -14,6 +17,16 @@ func main() {
     if e != nil {
         router.Logger.Fatal(e.Error())
     }
+
+    connection := ipconnection.New()
+    defer connection.Close()
+    remoteSwitch, e := remote_switch_v2_bricklet.New(configuration.RemoteSwitchUID, &connection)
+    if e != nil {
+        router.Logger.Fatal(e.Error())
+    }
+    connection.Connect(configuration.RemoteSwitchHost + ":" + configuration.RemoteSwitchPort)
+    defer connection.Disconnect()
+    remoteSwitch.RegisterRemoteStatusACallback(remote.ParseCall)
 
     router.Logger.Fatal(router.Start(":" + configuration.ServerPort))
 }
