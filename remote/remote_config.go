@@ -10,7 +10,7 @@ const CONFIG_NAME = "remote.json"
 // Config for a brennenstuhl RCS 1000 N Comfort remote
 type Remote_Config struct {
     HouseCode uint8
-    Buttons []Button
+    Buttons   []Button
 }
 
 func Load() (*Remote_Config, error) {
