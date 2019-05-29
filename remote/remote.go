@@ -56,7 +56,7 @@ func ParseCall(houseCode uint8, receiverCode uint8, switchTo remote_switch_v2_br
             }
             fmt.Println("Executing: " + call)
             var response string
-            if _, e := url.ParseRequestURI(call); e == nil {
+            if isValidUrl(call) {
                 response = executeRestCall(call)
             } else {
                 response = executeShellCommand(call)
@@ -71,6 +71,11 @@ func ParseCall(houseCode uint8, receiverCode uint8, switchTo remote_switch_v2_br
 
 func currentTime() int64 {
     return time.Now().UnixNano() / int64(time.Millisecond)
+}
+
+func isValidUrl(input string) bool {
+    u, e := url.Parse(input)
+    return e == nil && u.Scheme != "" && u.Host != ""
 }
 
 func executeRestCall(url string) string {
