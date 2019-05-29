@@ -26,6 +26,7 @@ func main() {
     }
     connection.Connect(configuration.RemoteSwitchHost + ":" + configuration.RemoteSwitchPort)
     defer connection.Disconnect()
+    remoteSwitch.SetRemoteConfiguration(remote_switch_v2_bricklet.RemoteTypeA, 1, true)
     remoteSwitch.RegisterRemoteStatusACallback(remote.ParseCall)
 
     router.Logger.Fatal(router.Start(":" + configuration.ServerPort))
