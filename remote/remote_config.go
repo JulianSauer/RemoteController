@@ -3,6 +3,7 @@ package remote
 import (
     "os"
     "encoding/json"
+    "strings"
 )
 
 const CONFIG_NAME = "remote.json"
@@ -24,6 +25,10 @@ func Load() (*Remote_Config, error) {
     decoder := json.NewDecoder(file)
     if e = decoder.Decode(&config); e != nil {
         return nil, e
+    }
+    for _, button := range config.Buttons {
+        button.On = strings.Replace(button.On, "\\", "", -1)
+        button.Off = strings.Replace(button.Off, "\\", "", -1)
     }
     return &config, nil
 }
