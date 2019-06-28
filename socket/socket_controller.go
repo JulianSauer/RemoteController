@@ -6,7 +6,7 @@ import (
     "strconv"
     "github.com/Tinkerforge/go-api-bindings/ipconnection"
     "github.com/Tinkerforge/go-api-bindings/remote_switch_v2_bricklet"
-    "github.com/Juliansauer/RemoteController/config"
+    "github.com/JulianSauer/RemoteController/config"
 )
 
 var configuration *config.Config

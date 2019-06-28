@@ -2,11 +2,11 @@ package main
 
 import (
     "github.com/labstack/echo"
-    "github.com/Juliansauer/RemoteController/socket"
-    "github.com/Juliansauer/RemoteController/config"
+    "github.com/JulianSauer/RemoteController/socket"
+    "github.com/JulianSauer/RemoteController/config"
     "github.com/Tinkerforge/go-api-bindings/ipconnection"
     "github.com/Tinkerforge/go-api-bindings/remote_switch_v2_bricklet"
-    "github.com/Juliansauer/RemoteController/remote"
+    "github.com/JulianSauer/RemoteController/remote"
 )
 
 func main() {
