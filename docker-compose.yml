@@ -6,5 +6,5 @@ services:
     ports:
       - 8080:8080
 	volumes:
-      - ${PWD}/config.json://go/src/github.com/JulianSauer/RemoteController/config.json
-      - ${PWD}/remote.json://go/src/github.com/JulianSauer/RemoteController/remote.json
+      - ${PWD}/config.json:/go/src/github.com/JulianSauer/RemoteController/config.json
+      - ${PWD}/remote.json:/go/src/github.com/JulianSauer/RemoteController/remote.json
