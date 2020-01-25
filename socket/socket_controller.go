@@ -1,12 +1,13 @@
 package socket
 
 import (
+    "github.com/JulianSauer/RemoteController/config"
+    "github.com/Tinkerforge/go-api-bindings/ipconnection"
+    "github.com/Tinkerforge/go-api-bindings/remote_switch_v2_bricklet"
     "github.com/labstack/echo"
     "net/http"
     "strconv"
-    "github.com/Tinkerforge/go-api-bindings/ipconnection"
-    "github.com/Tinkerforge/go-api-bindings/remote_switch_v2_bricklet"
-    "github.com/JulianSauer/RemoteController/config"
+    "time"
 )
 
 var configuration *config.Config
@@ -26,6 +27,7 @@ func SwitchTo(context echo.Context) error {
     var houseCode uint64
     var receiverCode uint64
     var switchTo bool
+    var timeout int
     var e error
     if houseCode, e = strconv.ParseUint(context.QueryParam("houseCode"), 10, 8); e != nil {
         return context.String(http.StatusBadGateway, e.Error())
@@ -36,9 +38,17 @@ func SwitchTo(context echo.Context) error {
     if switchTo, e = strconv.ParseBool(context.QueryParam("switchTo")); e != nil {
         return context.String(http.StatusBadGateway, e.Error())
     }
+    if context.QueryParam("timeout") == "" {
+        timeout = -1
+    } else if timeout, e = strconv.Atoi(context.QueryParam("timeout")); e != nil {
+        return context.String(http.StatusBadGateway, e.Error())
+    }
 
     if e = switchSocketTo(uint8(houseCode), uint8(receiverCode), switchTo); e != nil {
         return context.String(http.StatusBadGateway, e.Error())
+    }
+    if timeout > 0 {
+        switchSocketIn(timeout, uint8(houseCode), uint8(receiverCode), !switchTo, context.Logger())
     }
     return nil
 }
@@ -47,7 +57,7 @@ func SwitchTo(context echo.Context) error {
 func checkParameter(parameterKey string, context echo.Context) error {
     if context.QueryParam(parameterKey) == "" {
         errorMessage := "Missing parameter: " + parameterKey
-        context.Logger().Print(errorMessage)
+        context.Logger().Warn(errorMessage)
         return context.String(http.StatusBadRequest, errorMessage)
     }
     return nil
@@ -79,4 +89,14 @@ func switchSocketTo(houseCode uint8, receiverCode uint8, switchTo bool) error {
     } else {
         return remoteSwitch.SwitchSocketA(houseCode, receiverCode, remote_switch_v2_bricklet.SwitchToOff)
     }
+}
+
+// Switches a socket after a given time in minutes
+func switchSocketIn(timeout int, houseCode uint8, receiverCode uint8, switchTo bool, logger echo.Logger) {
+    go func() {
+        time.Sleep(time.Duration(timeout) * time.Minute)
+        if e := switchSocketTo(houseCode, receiverCode, switchTo); e != nil {
+            logger.Warn("Error during scheduled switching: " + e.Error())
+        }
+    }()
 }
