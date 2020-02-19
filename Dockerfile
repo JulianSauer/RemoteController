@@ -1,17 +1,14 @@
-FROM golang:1.13.1-alpine3.10
+FROM golang:1.13.5 as build-env
 
-LABEL maintainer="Julian Sauer julian_sauer@gmx.net"
+WORKDIR /go/src/RemoteController
+ADD . /go/src/RemoteController
 
-COPY ./ /go/src/github.com/JulianSauer/RemoteController
+RUN go get -d -v ./...
 
-WORKDIR /go/src/github.com/JulianSauer/RemoteController/
-RUN apk add git \
- && go get -v ./... \
- && go build main.go \
- && apk del git
+RUN go build -o /go/bin/RemoteController
 
-RUN adduser -D remote
-USER remote
+FROM scratch
+COPY --from=build-env /go/bin/RemoteController /
 
 EXPOSE 8080
 
